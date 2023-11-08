@@ -5,22 +5,23 @@
 #include <SoftwareSerial.h>
 #include <SPI.h>
 //GPS should be connected to digital pins 6&7
-SoftwareSerial gpsSerial(7,6);
-Adafruit_GPS GPS(&gpsSerial);
+SoftwareSerial mySerial(8, 7);
+Adafruit_GPS GPS(&mySerial);
 //default constructor is used to the reference lat/long is set to 0 by default, must call
 //heaversine hv();
 
-#define GPSECHO = true;
 void setup() {
   Serial.begin(115200);
-  while(!Serial){
-    ;
-  }
-  delay(500);
+ 
   GPS.begin(9600);
+  delay(500);
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+
   GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);
-  GPS.sendCommand(PGCMD_ANTENNA);
+ 
+  delay(1000);
+  mySerial.println(PMTK_Q_RELEASE);
+ 
 
   Serial.print("Initializing SD card...");
 
@@ -32,17 +33,20 @@ void setup() {
   //    Serial.println("failed to init");
     }
   }
-  
-  Serial.println("SD Card inited");
-  File dataFile = SD.open("Log1.txt",FILE_WRITE);
-  if(dataFile){
-  dataFile.println("Time,lattitude,longitude");
-  Serial.println("Time,lattitude,longitude");
-  dataFile.close();
-  }
-  while(!GPS.fix){
-   
-   Serial.println(GPS.fix);
+  Serial.println("inited SD");
+
+  // while(!GPS.fix){
+  // Serial.println("wayr" + GPS.fix);
+  // delay(2000);
+  // }
+  delay(5000);
+  while (!GPS.fix){
+
+    if (GPS.newNMEAreceived())
+    {
+      if (!GPS.parse(GPS.lastNMEA()))   // this also sets the newNMEAreceived() flag to false
+        return;  // we can
+    }
   }
   Serial.println(GPS.fixquality);
 }
@@ -51,21 +55,25 @@ void setup() {
 void loop() {
   //TODO implement data logging
   //String output = "";
-  
+   if (GPS.newNMEAreceived())
+  {
+    if (!GPS.parse(GPS.lastNMEA()))   // this also sets the newNMEAreceived() flag to false
+      return;  // we can
+  }
   File dataFile = SD.open("Log1.txt",FILE_WRITE);
   if(dataFile){
     dataFile.println(GPS.latitude_fixed + "," + GPS.longitude_fixed);
     Serial.println(GPS.latitude_fixed + "," + GPS.longitude_fixed);
     dataFile.close();
   }
-  delay(2000);
-  if(!GPS.fix){
-      Serial.println("Lost Print");
-      while(!GPS.fix){
-        Serial.println("waiting to regain fix");
-      }
-  }
   
+  // if(!GPS.fix){
+  //     Serial.println("Lost Print");
+  //     while(!GPS.fix){
+  //       Serial.println("waiting to regain fix");
+  //     }
+  // }
+  delay(2000);
   //TODO Implement function that converts minutes and seconds to one lat/long value
   
 
