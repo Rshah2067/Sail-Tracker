@@ -13,7 +13,6 @@ void setup() {
   Serial.begin(115200);
   delay(5000);
   GPS.begin(9600);
-  delay(500);
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);
   delay(1000);
@@ -30,24 +29,41 @@ void setup() {
       Serial.println("failed to init");
     }
   }
+
   Serial.println("inited SD");
+  // File dataFile = SD.open("datalog.txt", FILE_WRITE);
+  // if (dataFile) {
+  //   dataFile.println("lattitude,longitude");
+  //   dataFile.close();
+  // }
 }
 //boolean that tracks wheter we have parsed a new NMEA sentance
 boolean updated = false;
+
 void loop() {
   //parse new GPS info
   char c = GPS.read();
+  if((c)){
+    Serial.write(c);
+  }
+  
   if(GPS.newNMEAreceived()){
       updated = true;
       if(!GPS.parse(GPS.lastNMEA())){
         return;
       }
   }
-  if(updated == true){
-    Serial.println(GPS.longitude);
+  if(updated == true ){
+    
+    // File dataFile = SD.open("DATALOG.txt", FILE_WRITE);
+    
+    // dataFile.println(String(GPS.latitude) + "," +String(GPS.longitude));
+    // dataFile.close();
+  
+    Serial.println(String(GPS.longitude));
     Serial.println(GPS.latitude);
   }
-
+  Serial.println(updated);
   updated = false;
 }
 
