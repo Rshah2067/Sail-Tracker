@@ -2,6 +2,12 @@
 #include <Arduino.h>
 #include <SD.h>
 #include <SPI.h>
+#include <Adafruit_GPS.h>
+//Define GPS Serial and toggle ECHO of GPS String
+#define GPSSerial Serial1
+#define GPSECHO true
+Adafruit_GPS GPS(&Serial1);
+
 //Define SD card SPI Bus
 const int _MOSI = 19;
 const int _MISO = 16;
@@ -12,6 +18,17 @@ Adafruit_ADXL343 accel = Adafruit_ADXL343(12345);
 void setup() {
 
   Serial.begin(9600);
+  //Wait For Serial to Start
+  while(!Serial){
+    delay(10);
+  }
+
+  //Start GPS Serial
+  GPSSerial.begin(9600);
+  //Set GPS Output mode and frequency
+  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);
+  GPS.sendCommand(PGCMD_ANTENNA);
   //Start Accelerometer
   if(!accel.begin()){
     Serial.println("Failed to init Accelerometer");
@@ -29,6 +46,7 @@ void setup() {
   //Init SD Card
   Serial.println("Initing SD Card");
   if(!SD.begin(_CS)){
+    //Debug LED, in case of SD failure, LED is turned on
     digitalWrite(LED_BUILTIN,HIGH);
     Serial.println("Failed to init SD");
     return;
@@ -37,6 +55,10 @@ void setup() {
 }
 
 void loop() {
+  //Read GPS sentance and print if desired
+  char c = GPS.read();
+  if(GPSECHO && c) Serial.print(c);
+  //check if a new GPS sentance is recived if so 
   //get new accelerometer event
   sensors_event_t event;
   accel.getEvent(&event);
