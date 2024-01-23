@@ -55,10 +55,22 @@ void setup() {
 }
 
 void loop() {
+
+  //Create state array that contains all important information
+  int[] state = new int
   //Read GPS sentance and print if desired
   char c = GPS.read();
   if(GPSECHO && c) Serial.print(c);
-  //check if a new GPS sentance is recived if so 
+  //check if a new GPS sentance is recived if so parse it
+  if(GPS.newNMEAreceived()){
+    Serial.print(GPS.lastNMEA());
+    //try parsing
+    if(GPS.parse(GPS.lastNMEA())){
+      return;
+    }
+    
+  }
+  //Add GPS lat/long to data String
   //get new accelerometer event
   sensors_event_t event;
   accel.getEvent(&event);
@@ -78,4 +90,8 @@ void loop() {
   digitalWrite(LED_BUILTIN, LOW);
   sleep_ms(500);
   
+}
+
+float accelMagnitude(float x, float y, float z){
+  return sqrt(x*x +y*y + z*z);
 }
