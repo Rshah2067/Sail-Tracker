@@ -57,7 +57,8 @@ void setup() {
 void loop() {
 
   //Create state array that contains all important information
-  int[] state = new int
+  //[lat,long,t,ax,zy,az]
+  double state[6];
   //Read GPS sentance and print if desired
   char c = GPS.read();
   if(GPSECHO && c) Serial.print(c);
@@ -65,8 +66,14 @@ void loop() {
   if(GPS.newNMEAreceived()){
     Serial.print(GPS.lastNMEA());
     //try parsing
-    if(GPS.parse(GPS.lastNMEA())){
+    if(!GPS.parse(GPS.lastNMEA())){
       return;
+    }
+    //if GPS is succesfully parsed update the current position
+    else{
+      //First convert GPS cordinates from minute seconds to decimal then store into state
+      //lat
+      state[0] = GPS.latitude
     }
     
   }
@@ -91,7 +98,6 @@ void loop() {
   sleep_ms(500);
   
 }
-
-float accelMagnitude(float x, float y, float z){
-  return sqrt(x*x +y*y + z*z);
+double degreesPlusSeconds (float minutes,float seconds){
+  return minutes + seconds/60;
 }
