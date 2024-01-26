@@ -73,7 +73,7 @@ void loop() {
     else{
       //First convert GPS cordinates from minute seconds to decimal then store into state
       //lat
-      state[0] = GPS.latitude
+      state[0] = GPS.latitude;
     }
     
   }
