@@ -5,9 +5,10 @@
 #include <Adafruit_GPS.h>
 //Define GPS Serial and toggle ECHO of GPS String
 #define GPSSerial Serial1
-#define GPSECHO true
+#define GPSECHO false
 Adafruit_GPS GPS(&Serial1);
-
+//define timer
+u32_t timer = micros();
 //Define SD card SPI Bus
 const int _MOSI = 19;
 const int _MISO = 16;
@@ -55,7 +56,7 @@ void setup() {
 }
 
 void loop() {
-
+ 
   //Create state array that contains all important information
   //[lat,long,t,ax,zy,az]
   double state[6];
@@ -72,22 +73,28 @@ void loop() {
     //if GPS is succesfully parsed update the current position
     else{
       //First convert GPS cordinates from minute seconds to decimal then store into state
-      //lat
       state[0] = GPS.latitude;
+      state[1] = GPS.longitude;
+
     }
-    
   }
   //Add GPS lat/long to data String
   //get new accelerometer event
   sensors_event_t event;
   accel.getEvent(&event);
-  Serial.println(event.acceleration.x);
+  
+  state[3] = event.acceleration.x;
+  state[4] = event.acceleration.y;
+  state[5] = event.acceleration.z;
   sleep_ms(1000);
   //Save Accelerometer Data to SD card
   File dataFile = SD.open("datalog.txt",FILE_WRITE);
   if(dataFile){
-    dataFile.println(event.acceleration.x);
-    Serial.println("Saving" + String(event.acceleration.x));
+    for(int i=0;i<=5;i++){
+      dataFile.print(String(state[i]) + ",");
+      Serial.print(String(state[i])+",");
+    }
+    
     dataFile.close();
   }
   else Serial.println("failed to write data");
@@ -96,7 +103,6 @@ void loop() {
   sleep_ms(500);
   digitalWrite(LED_BUILTIN, LOW);
   sleep_ms(500);
-  
 }
 double degreesPlusSeconds (float minutes,float seconds){
   return minutes + seconds/60;
