@@ -60,6 +60,8 @@ void setup() {
 void loop() {
   /*TODO currently t is being stored as a floating point long meaning it can't be put into this array. 
   Investigate wheter time can be stored as a double by truncating unecessary zeros and shifting decimal place.
+  The time is stored as a floating long because it is meant to store time in micro seconds up to 50 days but I 
+  don't need for this long storage. 
   */
 
   //Create state array that contains all important information
@@ -112,7 +114,7 @@ void loop() {
   digitalWrite(LED_BUILTIN, LOW);
   sleep_ms(500);
 }
-//TODO test wheter necessary
+//TODO test wheter conversion is necessary
 
 //Funtion to convert GPS cordinates in minutes/seconds format to decimal, unsure if needed as there is conflicting documentation on how GPS outputs latitude
 double degreesPlusSeconds (float minutes,float seconds){
