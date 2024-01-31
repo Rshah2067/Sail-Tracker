@@ -16,6 +16,8 @@ const int _CS = 17;
 const int _SCK = 18;
 //Init Accelerometer 
 Adafruit_ADXL343 accel = Adafruit_ADXL343(12345);
+
+//TODO implement mulit core processing by adding setup for second core and investigate how memory resourcse are shared between cores
 void setup() {
 
   Serial.begin(9600);
@@ -39,7 +41,7 @@ void setup() {
   accel.setRange(ADXL343_RANGE_16_G);
   accel.setDataRate(ADXL343_DATARATE_0_10_HZ);
 
-  //SD card SPI 
+  //SD card SPI bus init
   SPI.setTX(_MOSI);
   SPI.setRX(_MISO);
   SPI.setCS(_CS);
@@ -56,9 +58,15 @@ void setup() {
 }
 
 void loop() {
- 
+  /*TODO currently t is being stored as a floating point long meaning it can't be put into this array. 
+  Investigate wheter time can be stored as a double by truncating unecessary zeros and shifting decimal place.
+  */
+
   //Create state array that contains all important information
   //[lat,long,t,ax,zy,az]
+  //creating an array for 2 reasons 1)if it is necessary to pass informtion via a FIFO bridge it will be more convient as one object
+  //2)when doing kalman math it will become necessary to represent state as an array anyways
+
   double state[6];
   //Read GPS sentance and print if desired
   char c = GPS.read();
@@ -104,6 +112,11 @@ void loop() {
   digitalWrite(LED_BUILTIN, LOW);
   sleep_ms(500);
 }
+//TODO test wheter necessary
+
+//Funtion to convert GPS cordinates in minutes/seconds format to decimal, unsure if needed as there is conflicting documentation on how GPS outputs latitude
 double degreesPlusSeconds (float minutes,float seconds){
   return minutes + seconds/60;
 }
+//TODO add method to pass information to other core
+//TODO add method implementing haversine conversion of GPS cordinates to relative cartesian positions
